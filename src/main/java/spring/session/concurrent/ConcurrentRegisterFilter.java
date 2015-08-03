@@ -37,17 +37,7 @@ public class ConcurrentRegisterFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		if (session != null && session.getAttribute(ConcurrentRepository.VALUE_KEY_PREFIX) != null) {
-			List<SessionInformation> sessions = concurrentRepository.getAllSessions(session, true);
-			boolean register = true;
-			for (SessionInformation si : sessions) {
-				if (si.getSessionId().equals(session.getId())) {
-					register = false;
-					break;
-				}
-			}
-			if (register) {
-				concurrentRepository.registerNewSessionInformation(session);
-			}
+			concurrentRepository.registerNewSessionInformation(session);
 			List<SessionInformation> sessionsExcludeExpired = concurrentRepository.getAllSessions(session, false);
 			// exclude itself
 			if (sessionsExcludeExpired.size() - 1 == maximumSessions) {

@@ -22,7 +22,7 @@ public class LoginController {
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(HttpSession session, @Valid Account account) {
-		session.setAttribute("user", account.getUsername());
+		session.setAttribute("principal", account.getUsername());
 		return "redirect:/home";
 	}
 }

@@ -2,7 +2,9 @@ package spring.session.concurrent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -12,7 +14,7 @@ import java.util.*;
 /**
  * Created by hanwen on 15-7-30.
  */
-public class ConcurrentRepository {
+public class ConcurrentRepository implements ApplicationListener<SessionDestroyedEvent> {
 
 	protected final Log logger = LogFactory.getLog(ConcurrentRepository.class);
 
@@ -20,9 +22,9 @@ public class ConcurrentRepository {
 
 	static final String PRINCIPAL_BOUNDED_HASH_KEY_PREFIX = "spring:session:principal:";
 
-	static final String VALUE_KEY_PREFIX = "user";
+	static final String VALUE_KEY_PREFIX = "principal";
 
-	/** <user,set<sessionId>> */
+	/** <principal,set<sessionId>> */
 	private final RedisOperations<String, String> principalRedisOperations;
 
 	/** <sessionId, sessionInformation> */
@@ -50,24 +52,24 @@ public class ConcurrentRepository {
 			String informationKey = getInformationKey(sessionId);
 			Map<Object, Object> entries = informationRedisOperations.boundHashOps(informationKey).entries();
 
-			boolean expired = false;
-			Long lastRequest = 0l;
-			String principal = "";
-			String sid = "";
+			boolean expired_attr = false;
+			Long lastRequest_attr = 0l;
+			String principal_attr = "";
+			String sessionId_attr = "";
 
 			for(Map.Entry<Object,Object> entry : entries.entrySet()) {
 				String key = (String) entry.getKey();
 				if(SessionInformation.EXPIRED_ATTR.equals(key)) {
-					expired = (Boolean) entry.getValue();
+					expired_attr = (Boolean) entry.getValue();
 				} else if(SessionInformation.LAST_REQUEST_ATTR.equals(key)) {
-					lastRequest = (Long) entry.getValue();
+					lastRequest_attr = (Long) entry.getValue();
 				} else if(SessionInformation.PRINCIPAL_ATTR.equals(key)) {
-					principal = (String) entry.getValue();
+					principal_attr = (String) entry.getValue();
 				} else if(SessionInformation.SESSION_ID_ATTR.equals(key)) {
-					sid = (String) entry.getValue();
+					sessionId_attr = (String) entry.getValue();
 				}
 			}
-			SessionInformation sessionInformation = new SessionInformation(principal, sid, lastRequest, expired);
+			SessionInformation sessionInformation = new SessionInformation(principal_attr, sessionId_attr, lastRequest_attr, expired_attr);
 			if (includeExpiredSessions || !sessionInformation.isExpired()) {
 				list.add(sessionInformation);
 			}
@@ -78,9 +80,9 @@ public class ConcurrentRepository {
 	public SessionInformation getSessionInformation(HttpSession session) {
 		Assert.notNull(session, "Session required as per interface contract");
 		List<SessionInformation> sessions = getAllSessions(session, true);
-		for (SessionInformation s : sessions) {
-			if (s.getSessionId().equals(session.getId().toString())) {
-				return s;
+		for (SessionInformation si : sessions) {
+			if (si.getSessionId().equals(session.getId().toString())) {
+				return si;
 			}
 		}
 		return null;
@@ -111,8 +113,8 @@ public class ConcurrentRepository {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Registering session " + session.getId() +", for principal " + session.getAttribute(VALUE_KEY_PREFIX));
 		}
-		if (getSessionInformation(session) != null) {
-			removeSessionInformation(session);
+		if (null != getSessionInformation(session)) {
+			return;
 		}
 		// register session to user
 		String principalKey = getPrincipalKey(session.getAttribute(VALUE_KEY_PREFIX).toString());
@@ -131,34 +133,40 @@ public class ConcurrentRepository {
 		}
 	}
 
-	public void removeSessionInformation(HttpSession session) {
-		Assert.notNull(session, "Session required as per interface contract");
-		SessionInformation info = getSessionInformation(session);
-		if (info == null) {
+	public void removeSessionInformation(String sessionId) {
+		String informationKey = getInformationKey(sessionId);
+		Map<Object, Object> entries = informationRedisOperations.boundHashOps(informationKey).entries();
+		if (CollectionUtils.isEmpty(entries)) {
 			return;
 		}
-		if (logger.isTraceEnabled()) {
-			logger.debug("Removing session " + session.getId() + " from set of registered sessions");
+		String principal_attr = "";
+		for(Map.Entry<Object,Object> entry : entries.entrySet()) {
+			String key = (String) entry.getKey();
+			if(SessionInformation.PRINCIPAL_ATTR.equals(key)) {
+				principal_attr = (String) entry.getValue();
+				break;
+			}
 		}
-		String informationKey = getInformationKey(info.getSessionId());
-		informationRedisOperations.delete(informationKey);
-		String principalKey = getPrincipalKey(info.getPrincipal());
+		String principalKey = getPrincipalKey(principal_attr);
 		Set<String> sessionsUsedByPrincipal = principalRedisOperations.boundSetOps(principalKey).members();
-
 		if (CollectionUtils.isEmpty(sessionsUsedByPrincipal)) {
 			return;
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Removing session " + session.getId() + " from principal's set of registered sessions");
-		}
-		principalRedisOperations.boundSetOps(principalKey).remove(info.getSessionId());
 		if (logger.isTraceEnabled()) {
-			logger.trace("Sessions used by '" + info.getPrincipal() + "' : " + sessionsUsedByPrincipal);
+			logger.debug("Removing session " + sessionId + " from set of registered sessions");
+		}
+		informationRedisOperations.delete(informationKey);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Removing session " + sessionId + " from principal's set of registered sessions");
+		}
+		principalRedisOperations.boundSetOps(principalKey).remove(sessionId);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Sessions used by '" + principal_attr + "' : " + sessionsUsedByPrincipal);
 		}
 	}
 
-	public void cleanExpiredSessions() {
-		// TODO delete expired and 30 days ago data
-
+	@Override
+	public void onApplicationEvent(SessionDestroyedEvent event) {
+		this.removeSessionInformation(event.getSessionId());
 	}
 }
