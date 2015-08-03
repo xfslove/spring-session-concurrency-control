@@ -35,11 +35,24 @@ public class ConcurrentRepository implements ApplicationListener<SessionDestroye
 		this.informationRedisOperations = redisOperations;
 	}
 
-	String getPrincipalKey(String user) {
-		return PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + user;
+	String getPrincipalKey(String principal) {
+		return PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + principal;
 	}
 
 	String getInformationKey(String sessionId) { return INFORMATION_BOUNDED_HASH_KEY_PREFIX + sessionId; }
+
+	public List<String> getAllPrincipals() {
+		Set<String> principalKeys = principalRedisOperations.keys(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "*");
+		if (CollectionUtils.isEmpty(principalKeys)) {
+			return Collections.emptyList();
+		}
+		List<String> principals = new ArrayList<String>();
+		for (String principalKey : principalKeys) {
+			principals.add(principalKey.substring(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX.length()));
+		}
+		return principals;
+	}
+
 
 	public List<SessionInformation> getAllSessions(HttpSession session, boolean includeExpiredSessions) {
 		String principalKey = getPrincipalKey(session.getAttribute(VALUE_KEY_PREFIX).toString());
