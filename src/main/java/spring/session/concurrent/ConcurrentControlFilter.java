@@ -29,7 +29,11 @@ public class ConcurrentControlFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		if (session != null && session.getAttribute(ConcurrentRepository.VALUE_KEY_PREFIX) != null) {
-			SessionInformation info = concurrentRepository.getSessionInformation(session);
+			SessionInformation info =
+					concurrentRepository.getSessionInformation(
+							session.getId(),
+							session.getAttribute(ConcurrentRepository.VALUE_KEY_PREFIX).toString()
+					);
 			if (info != null) {
 				if (info.isExpired()) {
 					// Expired - abort processing

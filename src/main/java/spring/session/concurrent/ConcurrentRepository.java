@@ -54,8 +54,8 @@ public class ConcurrentRepository implements ApplicationListener<SessionDestroye
 	}
 
 
-	public List<SessionInformation> getAllSessions(HttpSession session, boolean includeExpiredSessions) {
-		String principalKey = getPrincipalKey(session.getAttribute(VALUE_KEY_PREFIX).toString());
+	public List<SessionInformation> getAllSessions(String principal, boolean includeExpiredSessions) {
+		String principalKey = getPrincipalKey(principal);
 		Set<String> sessionsUsedByPrincipal = principalRedisOperations.boundSetOps(principalKey).members();
 		if (CollectionUtils.isEmpty(sessionsUsedByPrincipal)) {
 			return Collections.emptyList();
@@ -90,11 +90,12 @@ public class ConcurrentRepository implements ApplicationListener<SessionDestroye
 		return list;
 	}
 
-	public SessionInformation getSessionInformation(HttpSession session) {
-		Assert.notNull(session, "Session required as per interface contract");
-		List<SessionInformation> sessions = getAllSessions(session, true);
+	public SessionInformation getSessionInformation(String sessionId, String principal) {
+		Assert.notNull(sessionId, "Session required as per interface contract");
+		Assert.notNull(principal, "Principal required as per interface contract");
+		List<SessionInformation> sessions = getAllSessions(principal, true);
 		for (SessionInformation si : sessions) {
-			if (si.getSessionId().equals(session.getId().toString())) {
+			if (si.getSessionId().equals(sessionId)) {
 				return si;
 			}
 		}
@@ -121,20 +122,21 @@ public class ConcurrentRepository implements ApplicationListener<SessionDestroye
 		informationRedisOperations.boundHashOps(informationKey).put(SessionInformation.EXPIRED_ATTR, Boolean.TRUE);
 	}
 
-	public void registerNewSessionInformation(HttpSession session) {
-		Assert.notNull(session, "Session required as per interface contract");
+	public void registerNewSessionInformation(String sessionId, String principal) {
+		Assert.notNull(sessionId, "Session required as per interface contract");
+		Assert.notNull(principal, "Principal required as per interface contract");
 		if (logger.isDebugEnabled()) {
-			logger.debug("Registering session " + session.getId() +", for principal " + session.getAttribute(VALUE_KEY_PREFIX));
+			logger.debug("Registering session " + sessionId +", for principal " + principal);
 		}
-		if (null != getSessionInformation(session)) {
+		if (null != getSessionInformation(sessionId, principal)) {
 			return;
 		}
 		// register session to user
-		String principalKey = getPrincipalKey(session.getAttribute(VALUE_KEY_PREFIX).toString());
-		principalRedisOperations.boundSetOps(principalKey).add(session.getId().toString());
+		String principalKey = getPrincipalKey(principal);
+		principalRedisOperations.boundSetOps(principalKey).add(sessionId);
 		// add sessionInformation
-		SessionInformation sessionInformation = new SessionInformation(session.getAttribute(VALUE_KEY_PREFIX).toString(), session.getId().toString(), System.currentTimeMillis());
-		String informationKey = getInformationKey(session.getId().toString());
+		SessionInformation sessionInformation = new SessionInformation(principal, sessionId, System.currentTimeMillis());
+		String informationKey = getInformationKey(sessionId);
 		Map<String, Object> delta = new HashMap<String, Object>();
 		delta.put(SessionInformation.EXPIRED_ATTR, sessionInformation.isExpired());
 		delta.put(SessionInformation.LAST_REQUEST_ATTR, sessionInformation.getLastRequest());
