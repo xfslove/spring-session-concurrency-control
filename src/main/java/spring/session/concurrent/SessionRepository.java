@@ -8,15 +8,14 @@ import org.springframework.session.events.SessionDestroyedEvent;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import javax.servlet.http.HttpSession;
 import java.util.*;
 
 /**
  * Created by hanwen on 15-7-30.
  */
-public class ConcurrentRepository implements ApplicationListener<SessionDestroyedEvent> {
+public class SessionRepository implements ApplicationListener<SessionDestroyedEvent> {
 
-	protected final Log logger = LogFactory.getLog(ConcurrentRepository.class);
+	protected final Log logger = LogFactory.getLog(SessionRepository.class);
 
 	static final String INFORMATION_BOUNDED_HASH_KEY_PREFIX = "spring:session:information:";
 
@@ -30,7 +29,7 @@ public class ConcurrentRepository implements ApplicationListener<SessionDestroye
 	/** <sessionId, sessionInformation> */
 	private final RedisOperations<String,SessionInformation> informationRedisOperations;
 
-	public ConcurrentRepository(RedisOperations redisOperations) {
+	public SessionRepository(RedisOperations redisOperations) {
 		this.principalRedisOperations = redisOperations;
 		this.informationRedisOperations = redisOperations;
 	}

@@ -13,26 +13,26 @@ import java.io.IOException;
 /**
  * Created by hanwen on 15-7-30.
  */
-@Order(ConcurrentControlFilter.DEFAULT_ORDER)
-public class ConcurrentControlFilter extends OncePerRequestFilter {
+@Order(ConcurrentSessionControlFilter.DEFAULT_ORDER)
+public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 
-	/** after {@link ConcurrentRegisterFilter#DEFAULT_ORDER}*/
+	/** after {@link SessionRegisterFilter#DEFAULT_ORDER}*/
 	public static final int DEFAULT_ORDER = Integer.MIN_VALUE + 52;
 
-	private ConcurrentRepository concurrentRepository;
+	private SessionRepository sessionRepository;
 
-	public ConcurrentControlFilter(ConcurrentRepository concurrentRepository) {
-		this.concurrentRepository = concurrentRepository;
+	public ConcurrentSessionControlFilter(SessionRepository sessionRepository) {
+		this.sessionRepository = sessionRepository;
 	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(ConcurrentRepository.VALUE_KEY_PREFIX) != null) {
+		if (session != null && session.getAttribute(SessionRepository.VALUE_KEY_PREFIX) != null) {
 			SessionInformation info =
-					concurrentRepository.getSessionInformation(
+					sessionRepository.getSessionInformation(
 							session.getId(),
-							session.getAttribute(ConcurrentRepository.VALUE_KEY_PREFIX).toString()
+							session.getAttribute(SessionRepository.VALUE_KEY_PREFIX).toString()
 					);
 			if (info != null) {
 				if (info.isExpired()) {
@@ -50,7 +50,7 @@ public class ConcurrentControlFilter extends OncePerRequestFilter {
 					return;
 				} else {
 					// Non-expired - update last request date/time
-					concurrentRepository.refreshLastRequest(info.getSessionId());
+					sessionRepository.refreshLastRequest(info.getSessionId());
 				}
 			}
 		}

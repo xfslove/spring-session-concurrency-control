@@ -22,20 +22,20 @@ public class ConcurrentConfiguration {
 	}
 
 	@Bean
-	public ConcurrentRepository concurrentRepository(RedisTemplate<String, SessionInformation> sessionInformationRedisTemplate) {
-		ConcurrentRepository concurrentRepository = new ConcurrentRepository(sessionInformationRedisTemplate);
-		return concurrentRepository;
+	public SessionRepository sessionRepository(RedisTemplate<String, SessionInformation> sessionInformationRedisTemplate) {
+		SessionRepository sessionRepository = new SessionRepository(sessionInformationRedisTemplate);
+		return sessionRepository;
 	}
 
 	@Bean
-	public ConcurrentRegisterFilter concurrentRegisterFilter(ConcurrentRepository concurrentRepository) {
-		ConcurrentRegisterFilter concurrentRegisterFilter = new ConcurrentRegisterFilter(concurrentRepository);
-		return concurrentRegisterFilter;
+	public SessionRegisterFilter sessionRegisterFilter(SessionRepository sessionRepository) {
+		SessionRegisterFilter sessionRegisterFilter = new SessionRegisterFilter(sessionRepository);
+		return sessionRegisterFilter;
 	}
 
 	@Bean
-	public ConcurrentControlFilter concurrentControlFilter(ConcurrentRepository concurrentRepository) {
-		ConcurrentControlFilter ConcurrentControlFilter = new ConcurrentControlFilter(concurrentRepository);
-		return ConcurrentControlFilter;
+	public ConcurrentSessionControlFilter concurrentSessionControlFilter(SessionRepository sessionRepository) {
+		ConcurrentSessionControlFilter concurrentSessionControlFilter = new ConcurrentSessionControlFilter(sessionRepository);
+		return concurrentSessionControlFilter;
 	}
 }
