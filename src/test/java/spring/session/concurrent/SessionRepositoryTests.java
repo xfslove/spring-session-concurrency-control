@@ -1,26 +1,23 @@
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+package spring.session.concurrent;
+
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.RedisOperations;
-import spring.session.concurrent.SessionRepository;
-import spring.session.concurrent.SessionInformation;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.*;
 
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertEquals;
 
 /**
  * Created by hanwen on 15-8-4.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ConcurrentRepositoryTests {
+public class SessionRepositoryTests {
 
 	@Mock
 	RedisOperations redisOperations;
@@ -37,8 +34,9 @@ public class ConcurrentRepositoryTests {
 
 	String PRINCIPAL_BOUNDED_HASH_KEY_PREFIX = "spring:session:principal:";
 
-	@Before
-	public void setUp() {
+	@BeforeMethod(alwaysRun = true)
+	public void setup() {
+		MockitoAnnotations.initMocks(this);
 		this.sessionRepository = new SessionRepository(redisOperations);
 	}
 
@@ -49,8 +47,8 @@ public class ConcurrentRepositoryTests {
 		keys.add(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "user2");
 		when(redisOperations.keys(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "*")).thenReturn(keys);
 		List<String> result = sessionRepository.getAllPrincipals();
-		Assert.assertEquals("user1", result.get(1));
-		Assert.assertEquals("user2", result.get(0));
+		assertEquals("user1", result.get(1));
+		assertEquals("user2", result.get(0));
 	}
 
 	@Test
@@ -69,7 +67,7 @@ public class ConcurrentRepositoryTests {
 		map.put("sessionId", sessionUsedByPrincipal);
 		when(boundHashOperations.entries()).thenReturn(map);
 		List<SessionInformation> results = sessionRepository.getAllSessions(principal, true);
-		Assert.assertEquals(sessionUsedByPrincipal, results.get(0).getSessionId());
+		assertEquals(sessionUsedByPrincipal, results.get(0).getSessionId());
 	}
 
 	@Test

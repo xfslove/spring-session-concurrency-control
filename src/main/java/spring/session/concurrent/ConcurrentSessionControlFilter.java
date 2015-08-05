@@ -41,6 +41,7 @@ public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 					String targetUrl = null;
 					if (targetUrl != null) {
 						//	redirect to targetUrl
+						session.invalidate();
 						return;
 					} else {
 						response.getWriter().print("This session has been expired (possibly due to multiple concurrent " +
