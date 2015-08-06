@@ -30,7 +30,7 @@ import static org.testng.Assert.assertNotNull;
 public class ConcurrentSessionControlFilterTests {
 
 	@Mock
-	SessionRepository sessionRepository;
+	SessionInformationRepository sessionInformationRepository;
 
 	private MockHttpServletRequest request;
 
@@ -49,20 +49,20 @@ public class ConcurrentSessionControlFilterTests {
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.filter = new ConcurrentSessionControlFilter(sessionRepository);
+		this.filter = new ConcurrentSessionControlFilter(sessionInformationRepository);
 		setupRequest(PRINCIPAL_VAL_1);
 	}
 
 	@Test
 	public void filterRefreshSessionTest() throws Exception {
 		final SessionInformation si1 = new SessionInformation(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), request.getSession().getId(), 1l, false);
-		when(sessionRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
+		when(sessionInformationRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
-				verify(sessionRepository).refreshLastRequest(request.getSession().getId());
+				verify(sessionInformationRepository).refreshLastRequest(request.getSession().getId());
 			}
 		});
 	}
@@ -70,11 +70,11 @@ public class ConcurrentSessionControlFilterTests {
 	@Test
 	public void filterExistSessionTest() throws Exception {
 		final SessionInformation si1 = new SessionInformation(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), request.getSession().getId(), 1l, false);
-		when(sessionRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
+		when(sessionInformationRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
 			}
 		});
@@ -82,12 +82,12 @@ public class ConcurrentSessionControlFilterTests {
 		nextRequest(PRINCIPAL_VAL_1);
 
 		final SessionInformation si2 = new SessionInformation(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), request.getSession().getId(), 1l, true);
-		when(sessionRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si2);
+		when(sessionInformationRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si2);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
 				// verify an error parameter, because the response committed, will not exec the filter.
-				verify(sessionRepository).getSessionInformation(request.getSession().getId(), "error");
+				verify(sessionInformationRepository).getSessionInformation(request.getSession().getId(), "error");
 			}
 		});
 	}
@@ -95,11 +95,11 @@ public class ConcurrentSessionControlFilterTests {
 	@Test
 	public void filterNotExistSessionTest() throws Exception {
 		final SessionInformation si1 = new SessionInformation(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), request.getSession().getId(), 1l, false);
-		when(sessionRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
+		when(sessionInformationRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si1);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
 			}
 		});
@@ -107,11 +107,11 @@ public class ConcurrentSessionControlFilterTests {
 		nextRequest(PRINCIPAL_VAL_2);
 
 		final SessionInformation si2 = new SessionInformation(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), request.getSession().getId(), 1l, true);
-		when(sessionRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si2);
+		when(sessionInformationRepository.getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString())).thenReturn(si2);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).getSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
 			}
 		});

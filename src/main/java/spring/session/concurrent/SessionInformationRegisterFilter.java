@@ -16,33 +16,33 @@ import java.util.List;
  * register session information
  * Created by hanwen on 15-7-30.
  */
-@Order(SessionRegisterFilter.DEFAULT_ORDER)
-public class SessionRegisterFilter extends OncePerRequestFilter {
+@Order(SessionInformationRegisterFilter.DEFAULT_ORDER)
+public class SessionInformationRegisterFilter extends OncePerRequestFilter {
 
 	/** after {@link org.springframework.session.web.http.SessionRepositoryFilter#DEFAULT_ORDER} */
 	public static final int DEFAULT_ORDER = Integer.MIN_VALUE + 51;
 
-	private SessionRepository sessionRepository;
+	private SessionInformationRepository sessionInformationRepository;
 
 	private int maximumSessions = 1;
 
-	public SessionRegisterFilter(SessionRepository sessionRepository) {
-		if(sessionRepository == null) {
-			throw new IllegalArgumentException("sessionRepository cannot be null");
+	public SessionInformationRegisterFilter(SessionInformationRepository sessionInformationRepository) {
+		if(sessionInformationRepository == null) {
+			throw new IllegalArgumentException("sessionInformationRepository cannot be null");
 		}
-		this.sessionRepository = sessionRepository;
+		this.sessionInformationRepository = sessionInformationRepository;
 	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(SessionRepository.VALUE_KEY_PREFIX) != null) {
-			sessionRepository.registerNewSessionInformation(
+		if (session != null && session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX) != null) {
+			sessionInformationRepository.registerNewSessionInformation(
 					session.getId(),
-					session.getAttribute(SessionRepository.VALUE_KEY_PREFIX).toString()
+					session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX).toString()
 			);
 			List<SessionInformation> sessionsExcludeExpired =
-					sessionRepository.getAllSessions(session.getAttribute(SessionRepository.VALUE_KEY_PREFIX).toString(), false);
+					sessionInformationRepository.getAllSessions(session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX).toString(), false);
 			// exclude itself
 			if (sessionsExcludeExpired.size() - 1 == maximumSessions) {
 				// valid recently session, expire oldest sessions with same user
@@ -52,7 +52,7 @@ public class SessionRegisterFilter extends OncePerRequestFilter {
 						leastRecentlyUsed = si;
 					}
 				}
-				sessionRepository.expireNow(leastRecentlyUsed.getSessionId());
+				sessionInformationRepository.expireNow(leastRecentlyUsed.getSessionId());
 			}
 		}
 		filterChain.doFilter(request, response);

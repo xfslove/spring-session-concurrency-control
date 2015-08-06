@@ -13,9 +13,9 @@ import java.util.*;
 /**
  * Created by hanwen on 15-7-30.
  */
-public class SessionRepository implements ApplicationListener<SessionDestroyedEvent> {
+public class SessionInformationRepository implements ApplicationListener<SessionDestroyedEvent> {
 
-	protected final Log logger = LogFactory.getLog(SessionRepository.class);
+	protected final Log logger = LogFactory.getLog(SessionInformationRepository.class);
 
 	static final String INFORMATION_BOUNDED_HASH_KEY_PREFIX = "spring:session:information:";
 
@@ -29,7 +29,7 @@ public class SessionRepository implements ApplicationListener<SessionDestroyedEv
 	/** <sessionId, sessionInformation> */
 	private final RedisOperations<String,SessionInformation> informationRedisOperations;
 
-	public SessionRepository(RedisOperations redisOperations) {
+	public SessionInformationRepository(RedisOperations redisOperations) {
 		this.principalRedisOperations = redisOperations;
 		this.informationRedisOperations = redisOperations;
 	}

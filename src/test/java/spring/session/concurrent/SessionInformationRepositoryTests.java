@@ -17,7 +17,7 @@ import static org.testng.Assert.assertEquals;
 /**
  * Created by hanwen on 15-8-4.
  */
-public class SessionRepositoryTests {
+public class SessionInformationRepositoryTests {
 
 	@Mock
 	RedisOperations redisOperations;
@@ -28,7 +28,7 @@ public class SessionRepositoryTests {
 	@Mock
 	BoundSetOperations<String, String> boundSetOperations;
 
-	private SessionRepository sessionRepository;
+	private SessionInformationRepository sessionInformationRepository;
 
 	String INFORMATION_BOUNDED_HASH_KEY_PREFIX = "spring:session:information:";
 
@@ -37,7 +37,7 @@ public class SessionRepositoryTests {
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.sessionRepository = new SessionRepository(redisOperations);
+		this.sessionInformationRepository = new SessionInformationRepository(redisOperations);
 	}
 
 	@Test
@@ -46,7 +46,7 @@ public class SessionRepositoryTests {
 		keys.add(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "user1");
 		keys.add(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "user2");
 		when(redisOperations.keys(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "*")).thenReturn(keys);
-		List<String> result = sessionRepository.getAllPrincipals();
+		List<String> result = sessionInformationRepository.getAllPrincipals();
 		assertEquals("user1", result.get(1));
 		assertEquals("user2", result.get(0));
 	}
@@ -66,7 +66,7 @@ public class SessionRepositoryTests {
 		map.put("principal", "");
 		map.put("sessionId", sessionUsedByPrincipal);
 		when(boundHashOperations.entries()).thenReturn(map);
-		List<SessionInformation> results = sessionRepository.getAllSessions(principal, true);
+		List<SessionInformation> results = sessionInformationRepository.getAllSessions(principal, true);
 		assertEquals(sessionUsedByPrincipal, results.get(0).getSessionId());
 	}
 
@@ -81,7 +81,7 @@ public class SessionRepositoryTests {
 		map.put("sessionId", sessionId);
 
 		when(boundHashOperations.entries()).thenReturn(map);
-		sessionRepository.refreshLastRequest(sessionId);
+		sessionInformationRepository.refreshLastRequest(sessionId);
 		verify(boundHashOperations).delete("lastRequest");
 		ArgumentMatcher<String> argumentMatcher1 = new ArgumentMatcher<String>() {
 
@@ -110,7 +110,7 @@ public class SessionRepositoryTests {
 		map.put("principal", "");
 		map.put("sessionId", sessionId);
 		when(boundHashOperations.entries()).thenReturn(map);
-		sessionRepository.expireNow(sessionId);
+		sessionInformationRepository.expireNow(sessionId);
 		verify(boundHashOperations).delete("expired");
 		verify(boundHashOperations).put("expired", true);
 	}
@@ -130,7 +130,7 @@ public class SessionRepositoryTests {
 		map.put("principal", "");
 		map.put("sessionId", sessionId);
 		when(boundHashOperations.entries()).thenReturn(map);
-		sessionRepository.registerNewSessionInformation(sessionId, principal);
+		sessionInformationRepository.registerNewSessionInformation(sessionId, principal);
 	}
 
 	@Test
@@ -150,7 +150,7 @@ public class SessionRepositoryTests {
 		when(boundHashOperations.entries()).thenReturn(map);
 		final String meId = "12344-23432-42342-43544";
 		when(redisOperations.boundHashOps(INFORMATION_BOUNDED_HASH_KEY_PREFIX + meId)).thenReturn(boundHashOperations);
-		sessionRepository.registerNewSessionInformation(meId, principal);
+		sessionInformationRepository.registerNewSessionInformation(meId, principal);
 		verify(boundSetOperations).add(meId);
 		Map<Object, Object> meMap = new HashMap<Object, Object>();
 		meMap.put("expired", false);
@@ -195,7 +195,7 @@ public class SessionRepositoryTests {
 		Set<String> principals = new HashSet<String>();
 		principals.add(principal);
 		when(boundSetOperations.members()).thenReturn(principals);
-		sessionRepository.removeSessionInformation(sessionId);
+		sessionInformationRepository.removeSessionInformation(sessionId);
 		verify(redisOperations).delete(INFORMATION_BOUNDED_HASH_KEY_PREFIX + sessionId);
 		verify(boundSetOperations).remove(sessionId);
 	}

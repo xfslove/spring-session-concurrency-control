@@ -28,10 +28,10 @@ import static org.testng.Assert.assertNotNull;
 /**
  * Created by hanwen on 15-8-5.
  */
-public class SessionRegisterFilterTests {
+public class SessionInformationRegisterFilterTests {
 
 	@Mock
-	SessionRepository sessionRepository;
+	SessionInformationRepository sessionInformationRepository;
 
 	private MockHttpServletRequest request;
 
@@ -39,7 +39,7 @@ public class SessionRegisterFilterTests {
 
 	private MockFilterChain chain;
 
-	private SessionRegisterFilter filter;
+	private SessionInformationRegisterFilter filter;
 
 	private String PRINCIPAL_ATTR = "principal";
 
@@ -48,18 +48,18 @@ public class SessionRegisterFilterTests {
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.filter = new SessionRegisterFilter(sessionRepository);
+		this.filter = new SessionInformationRegisterFilter(sessionInformationRepository);
 		setupRequest(PRINCIPAL_VAL_1);
 	}
 
 	@Test
 	public void registerNewOneTest() throws Exception {
-		when(sessionRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
+		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
 				.thenReturn(new ArrayList<SessionInformation>());
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
 			}
 		});
@@ -69,12 +69,12 @@ public class SessionRegisterFilterTests {
 	public void expiredOldOneTest() throws Exception {
 		final List<SessionInformation> sessionInformationList = new ArrayList<SessionInformation>();
 		sessionInformationList.add(new SessionInformation(PRINCIPAL_VAL_1, request.getSession().getId(), 1l));
-		when(sessionRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
+		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
 				.thenReturn(sessionInformationList);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
 				assertNotNull(response);
 			}
 		});
@@ -85,8 +85,8 @@ public class SessionRegisterFilterTests {
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
-				verify(sessionRepository).expireNow(id1);
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).expireNow(id1);
 				assertNotNull(response);
 			}
 		});

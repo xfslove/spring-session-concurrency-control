@@ -16,23 +16,23 @@ import java.io.IOException;
 @Order(ConcurrentSessionControlFilter.DEFAULT_ORDER)
 public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 
-	/** after {@link SessionRegisterFilter#DEFAULT_ORDER}*/
+	/** after {@link SessionInformationRegisterFilter#DEFAULT_ORDER}*/
 	public static final int DEFAULT_ORDER = Integer.MIN_VALUE + 52;
 
-	private SessionRepository sessionRepository;
+	private SessionInformationRepository sessionInformationRepository;
 
-	public ConcurrentSessionControlFilter(SessionRepository sessionRepository) {
-		this.sessionRepository = sessionRepository;
+	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository) {
+		this.sessionInformationRepository = sessionInformationRepository;
 	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(SessionRepository.VALUE_KEY_PREFIX) != null) {
+		if (session != null && session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX) != null) {
 			SessionInformation info =
-					sessionRepository.getSessionInformation(
+					sessionInformationRepository.getSessionInformation(
 							session.getId(),
-							session.getAttribute(SessionRepository.VALUE_KEY_PREFIX).toString()
+							session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX).toString()
 					);
 			if (info != null) {
 				if (info.isExpired()) {
@@ -51,7 +51,7 @@ public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 					return;
 				} else {
 					// Non-expired - update last request date/time
-					sessionRepository.refreshLastRequest(info.getSessionId());
+					sessionInformationRepository.refreshLastRequest(info.getSessionId());
 				}
 			}
 		}
