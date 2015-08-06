@@ -18,9 +18,9 @@ import org.testng.annotations.Test;
 import static org.testng.AssertJUnit.*;
 
 @WebAppConfiguration
-@SpringApplicationConfiguration(classes = SessionRedisIntegrationTests.class)
-@ComponentScan(basePackages = {"spring.session.concurrent"})
-public class SessionRedisIntegrationTests<S extends Session> extends AbstractTestNGSpringContextTests {
+@SpringApplicationConfiguration(classes = SessionRedisIntegrationTest.class)
+@ComponentScan(basePackages = {"com.supwisdom.infras.session"})
+public class SessionRedisIntegrationTest<S extends Session> extends AbstractTestNGSpringContextTests {
 	@Autowired
 	private SessionRepository<S> repository;
 
@@ -38,7 +38,7 @@ public class SessionRedisIntegrationTests<S extends Session> extends AbstractTes
 	}
 
 	@Test
-	public void informationSaveTest() throws InterruptedException {
+	public void testInformationSave() throws InterruptedException {
 
 		S toSave = repository.createSession();
 		toSave.setAttribute("principal", "user");

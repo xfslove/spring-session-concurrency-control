@@ -4,7 +4,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
 
-public class SessionInformationTests {
+public class SessionInformationTest {
 
 	@Test
 	public void testObject() throws Exception {

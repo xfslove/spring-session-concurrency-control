@@ -17,7 +17,7 @@ import static org.testng.Assert.assertEquals;
 /**
  * Created by hanwen on 15-8-4.
  */
-public class SessionInformationRepositoryTests {
+public class SessionInformationRepositoryTest {
 
 	@Mock
 	RedisOperations redisOperations;
@@ -41,7 +41,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void getAllPrincipalsTest() {
+	public void testGetAllPrincipals() {
 		Set<String> keys = new HashSet<String>();
 		keys.add(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "user1");
 		keys.add(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + "user2");
@@ -52,7 +52,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void getAllSessionsTest() {
+	public void testGetAllSessions() {
 		String principal = "user1";
 		String sessionUsedByPrincipal = "12344-23432-42342-43543";
 		when(redisOperations.boundSetOps(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + principal)).thenReturn(boundSetOperations);
@@ -71,7 +71,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void refreshLastRequestTest() {
+	public void testRefreshLastRequest() {
 		String sessionId = "12344-23432-42342-43543";
 		when(redisOperations.boundHashOps(INFORMATION_BOUNDED_HASH_KEY_PREFIX + sessionId)).thenReturn(boundHashOperations);
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -101,7 +101,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void expireNowTest() {
+	public void testExpireNow() {
 		String sessionId = "12344-23432-42342-43543";
 		when(redisOperations.boundHashOps(INFORMATION_BOUNDED_HASH_KEY_PREFIX + sessionId)).thenReturn(boundHashOperations);
 		Map<Object, Object> map = new HashMap<Object, Object>();
@@ -116,7 +116,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void registerNewSessionInformationNullTest() {
+	public void testRegisterNewSessionInformationNull() {
 		String principal = "user1";
 		String sessionId = "12344-23432-42342-43543";
 		when(redisOperations.boundSetOps(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + principal)).thenReturn(boundSetOperations);
@@ -134,7 +134,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void registerNewSessionInformationNotNullTest() {
+	public void testRegisterNewSessionInformationNotNull() {
 		final String principal = "user1";
 		String sessionId = "12344-23432-42342-43543";
 		when(redisOperations.boundSetOps(PRINCIPAL_BOUNDED_HASH_KEY_PREFIX + principal)).thenReturn(boundSetOperations);
@@ -181,7 +181,7 @@ public class SessionInformationRepositoryTests {
 	}
 
 	@Test
-	public void removeSessionInformationTest() {
+	public void testRemoveSessionInformation() {
 		String principal = "user1";
 		String sessionId = "12344-23432-42342-43543";
 		when(redisOperations.boundHashOps(INFORMATION_BOUNDED_HASH_KEY_PREFIX + sessionId)).thenReturn(boundHashOperations);
