@@ -19,7 +19,7 @@ import static org.testng.AssertJUnit.*;
 
 @WebAppConfiguration
 @SpringApplicationConfiguration(classes = SessionRedisIntegrationTest.class)
-@ComponentScan(basePackages = {"com.supwisdom.infras.session"})
+@ComponentScan(basePackages = {"spring.session.concurrent"})
 public class SessionRedisIntegrationTest<S extends Session> extends AbstractTestNGSpringContextTests {
 	@Autowired
 	private SessionRepository<S> repository;

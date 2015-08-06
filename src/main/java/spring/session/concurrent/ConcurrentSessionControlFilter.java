@@ -1,7 +1,6 @@
 package spring.session.concurrent;
 
 import org.springframework.core.annotation.Order;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -14,31 +13,28 @@ import java.io.IOException;
  * Created by hanwen on 15-7-30.
  */
 @Order(ConcurrentSessionControlFilter.DEFAULT_ORDER)
-public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
+public class ConcurrentSessionControlFilter extends SessionInformationFilter {
 
 	/** after {@link SessionInformationRegisterFilter#DEFAULT_ORDER}*/
-	public static final int DEFAULT_ORDER = Integer.MIN_VALUE + 52;
+	public static final int DEFAULT_ORDER = SessionInformationRegisterFilter.DEFAULT_ORDER + 1;
 
-	private SessionInformationRepository sessionInformationRepository;
-
-	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository) {
-		this.sessionInformationRepository = sessionInformationRepository;
+	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, ConfigDataProvider configDataProvider) {
+		super(sessionInformationRepository, configDataProvider);
 	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX) != null) {
+		if (session != null && session.getAttribute(configDataProvider.getPrincipalAttr()) != null) {
 			SessionInformation info =
 					sessionInformationRepository.getSessionInformation(
 							session.getId(),
-							session.getAttribute(SessionInformationRepository.VALUE_KEY_PREFIX).toString()
+							session.getAttribute(configDataProvider.getPrincipalAttr()).toString()
 					);
 			if (info != null) {
 				if (info.isExpired()) {
 					// Expired - abort processing
-					// doLogout
-					String targetUrl = null;
+					String targetUrl = configDataProvider.getTargetUrl();
 					if (targetUrl != null) {
 						//	redirect to targetUrl
 						session.invalidate();

@@ -21,8 +21,6 @@ public class SessionInformationRepository implements ApplicationListener<Session
 
 	static final String PRINCIPAL_BOUNDED_HASH_KEY_PREFIX = "spring:session:principal:";
 
-	static final String VALUE_KEY_PREFIX = "principal";
-
 	/** <principal,set<sessionId>> */
 	private final RedisOperations<String, String> principalRedisOperations;
 

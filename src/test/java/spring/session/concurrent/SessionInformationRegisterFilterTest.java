@@ -41,25 +41,23 @@ public class SessionInformationRegisterFilterTest {
 
 	private SessionInformationRegisterFilter filter;
 
-	private String PRINCIPAL_ATTR = "principal";
-
 	private String PRINCIPAL_VAL_1 = "user1";
 
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.filter = new SessionInformationRegisterFilter(sessionInformationRepository);
+		this.filter = new SessionInformationRegisterFilter(sessionInformationRepository, new ConfigDataProvider());
 		setupRequest(PRINCIPAL_VAL_1);
 	}
 
 	@Test
 	public void testRegisterNewOne() throws Exception {
-		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
+		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(filter.configDataProvider.getPrincipalAttr()).toString(), false))
 				.thenReturn(new ArrayList<SessionInformation>());
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(filter.configDataProvider.getPrincipalAttr()).toString());
 				assertNotNull(response);
 			}
 		});
@@ -69,23 +67,24 @@ public class SessionInformationRegisterFilterTest {
 	public void TestExpiredOldOne() throws Exception {
 		final List<SessionInformation> sessionInformationList = new ArrayList<SessionInformation>();
 		sessionInformationList.add(new SessionInformation(PRINCIPAL_VAL_1, request.getSession().getId(), 1l));
-		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(PRINCIPAL_ATTR).toString(), false))
+		when(sessionInformationRepository.getAllSessions(request.getSession().getAttribute(filter.configDataProvider.getPrincipalAttr()).toString(), false))
 				.thenReturn(sessionInformationList);
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(filter.configDataProvider.getPrincipalAttr()).toString());
 				assertNotNull(response);
 			}
 		});
 
 		final String id1 = request.getSession().getId();
 		nextRequest(PRINCIPAL_VAL_1);
+
 		sessionInformationList.add(new SessionInformation(PRINCIPAL_VAL_1, request.getSession().getId(), 2l));
 		doFilter(new DoInFilter() {
 			@Override
 			public void doFilter(HttpServletRequest wrappedRequest, HttpServletResponse wrappedResponse) throws IOException {
-				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(PRINCIPAL_ATTR).toString());
+				verify(sessionInformationRepository).registerNewSessionInformation(request.getSession().getId(), request.getSession().getAttribute(filter.configDataProvider.getPrincipalAttr()).toString());
 				verify(sessionInformationRepository).expireNow(id1);
 				assertNotNull(response);
 			}
@@ -94,7 +93,7 @@ public class SessionInformationRegisterFilterTest {
 
 	private void setupRequest(String principal) {
 		request = new MockHttpServletRequest();
-		request.getSession().setAttribute(PRINCIPAL_ATTR, principal);
+		request.getSession().setAttribute(filter.configDataProvider.getPrincipalAttr(), principal);
 		response = new MockHttpServletResponse();
 		chain = new MockFilterChain();
 	}

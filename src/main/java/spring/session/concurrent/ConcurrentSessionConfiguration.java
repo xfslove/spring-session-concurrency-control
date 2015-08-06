@@ -12,7 +12,12 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
  */
 @Configuration
 @EnableRedisHttpSession
-public class SessionConfiguration {
+public class ConcurrentSessionConfiguration {
+
+	@Bean
+	public ConfigDataProvider configDataProvider() {
+		return new ConfigDataProvider();
+	}
 
 	@Bean
 	public RedisTemplate<String,SessionInformation> sessionInformationRedisTemplate(RedisConnectionFactory connectionFactory) {
@@ -30,14 +35,14 @@ public class SessionConfiguration {
 	}
 
 	@Bean
-	public SessionInformationRegisterFilter sessionInformationRegisterFilter(SessionInformationRepository sessionInformationRepository) {
-		SessionInformationRegisterFilter sessionInformationRegisterFilter = new SessionInformationRegisterFilter(sessionInformationRepository);
+	public SessionInformationRegisterFilter sessionInformationRegisterFilter(SessionInformationRepository sessionInformationRepository, ConfigDataProvider configDataProvider) {
+		SessionInformationRegisterFilter sessionInformationRegisterFilter = new SessionInformationRegisterFilter(sessionInformationRepository, configDataProvider);
 		return sessionInformationRegisterFilter;
 	}
 
 	@Bean
-	public ConcurrentSessionControlFilter concurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository) {
-		ConcurrentSessionControlFilter concurrentSessionControlFilter = new ConcurrentSessionControlFilter(sessionInformationRepository);
+	public ConcurrentSessionControlFilter concurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, ConfigDataProvider configDataProvider) {
+		ConcurrentSessionControlFilter concurrentSessionControlFilter = new ConcurrentSessionControlFilter(sessionInformationRepository, configDataProvider);
 		return concurrentSessionControlFilter;
 	}
 }
