@@ -1,4 +1,4 @@
-package spring.session.web.mvc;
+package spring.session.example.mvc;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

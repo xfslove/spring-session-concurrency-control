@@ -1,11 +1,9 @@
-package spring.session.web.mvc;
+package spring.session.example.mvc;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import spring.session.concurrent.ConfigDataProvider;
-import spring.session.web.Account;
+import spring.session.example.Account;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -17,9 +15,6 @@ import javax.validation.Valid;
 @RequestMapping("/")
 public class LoginController {
 
-	@Autowired
-	private ConfigDataProvider configDataProvider;
-
 	@RequestMapping
 	public String index() {
 		return "login/index";
@@ -27,8 +22,7 @@ public class LoginController {
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(HttpSession session, @Valid Account account) {
-		configDataProvider.setPrincipalAttr("principal");
-		session.setAttribute(configDataProvider.getPrincipalAttr(), account.getUsername());
+		session.setAttribute("principal", account.getUsername());
 		return "redirect:/home";
 	}
 }

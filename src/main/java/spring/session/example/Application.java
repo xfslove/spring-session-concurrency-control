@@ -1,4 +1,4 @@
-package spring.session.web;
+package spring.session.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

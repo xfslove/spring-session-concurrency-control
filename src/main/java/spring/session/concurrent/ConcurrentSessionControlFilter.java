@@ -1,6 +1,9 @@
 package spring.session.concurrent;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.filter.OncePerRequestFilter;
+import spring.session.concurrent.service.*;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -13,30 +16,39 @@ import java.io.IOException;
  * Created by hanwen on 15-7-30.
  */
 @Order(ConcurrentSessionControlFilter.DEFAULT_ORDER)
-public class ConcurrentSessionControlFilter extends SessionInformationFilter {
+public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 
 	/** after {@link SessionInformationRegisterFilter#DEFAULT_ORDER}*/
 	public static final int DEFAULT_ORDER = SessionInformationRegisterFilter.DEFAULT_ORDER + 1;
 
-	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, ConfigDataProvider configDataProvider) {
-		super(sessionInformationRepository, configDataProvider);
-	}
+	@Autowired
+	private SessionInformationRepository sessionInformationRepository;
+
+	@Autowired
+	private PrincipalGetter principalGetter;
+
+	@Autowired
+	private KickOutRedirectUrlGetter kickOutRedirectUrlGetter;
+
+	@Autowired
+	private PrincipalExistDecider principalExistDecider;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(configDataProvider.getPrincipalAttr()) != null) {
+		if (principalExistDecider.isExistPrincipal(request)) {
 			SessionInformation info =
 					sessionInformationRepository.getSessionInformation(
 							session.getId(),
-							session.getAttribute(configDataProvider.getPrincipalAttr()).toString()
+							principalGetter.getPrincipal(request)
 					);
 			if (info != null) {
 				if (info.isExpired()) {
 					// Expired - abort processing
-					String targetUrl = configDataProvider.getTargetUrl();
+					String targetUrl = kickOutRedirectUrlGetter.getRedirectUrl(request);
 					if (targetUrl != null) {
 						//	redirect to targetUrl
+						response.sendRedirect(targetUrl);
 						session.invalidate();
 						return;
 					} else {

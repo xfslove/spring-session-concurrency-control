@@ -1,4 +1,4 @@
-package spring.session.web;
+package spring.session.example;
 
 /**
  * Created by hanwen on 15-7-31.

@@ -1,8 +1,13 @@
 package spring.session.concurrent;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.session.web.http.SessionRepositoryFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
+import spring.session.concurrent.service.MaxSessionCountGetter;
+import spring.session.concurrent.service.PrincipalExistDecider;
+import spring.session.concurrent.service.PrincipalGetter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -17,27 +22,35 @@ import java.util.List;
  * Created by hanwen on 15-7-30.
  */
 @Order(SessionInformationRegisterFilter.DEFAULT_ORDER)
-public class SessionInformationRegisterFilter extends SessionInformationFilter {
+public class SessionInformationRegisterFilter extends OncePerRequestFilter {
 
 	/** after {@link org.springframework.session.web.http.SessionRepositoryFilter#DEFAULT_ORDER} */
 	public static final int DEFAULT_ORDER = SessionRepositoryFilter.DEFAULT_ORDER + 1;
 
-	public SessionInformationRegisterFilter(SessionInformationRepository sessionInformationRepository, ConfigDataProvider configDataProvider) {
-		super(sessionInformationRepository, configDataProvider);
-	}
+	@Autowired
+	private SessionInformationRepository sessionInformationRepository;
+
+	@Autowired
+	private PrincipalGetter principalGetter;
+
+	@Autowired
+	private MaxSessionCountGetter maxSessionCountGetter;
+
+	@Autowired
+	private PrincipalExistDecider principalExistDecider;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session != null && session.getAttribute(configDataProvider.getPrincipalAttr()) != null) {
+		if (principalExistDecider.isExistPrincipal(request)) {
 			sessionInformationRepository.registerNewSessionInformation(
 					session.getId(),
-					session.getAttribute(configDataProvider.getPrincipalAttr()).toString()
+					principalGetter.getPrincipal(request)
 			);
 			List<SessionInformation> sessionsExcludeExpired =
-					sessionInformationRepository.getAllSessions(session.getAttribute(configDataProvider.getPrincipalAttr()).toString(), false);
+					sessionInformationRepository.getAllSessions(principalGetter.getPrincipal(request), false);
 			// exclude itself
-			if (sessionsExcludeExpired.size() - 1 == configDataProvider.getMaximumSessions()) {
+			if (sessionsExcludeExpired.size() - 1 == maxSessionCountGetter.getMaximumSessions(request)) {
 				// valid recently session, expire oldest sessions with same user
 				SessionInformation leastRecentlyUsed = null;
 				for (SessionInformation si : sessionsExcludeExpired) {
