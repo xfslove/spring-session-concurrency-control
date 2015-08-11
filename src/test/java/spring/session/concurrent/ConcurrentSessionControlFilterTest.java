@@ -8,9 +8,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import spring.session.concurrent.service.DefaultKickOutRedirectUrlGetter;
-import spring.session.concurrent.service.DefaultPrincipalExistDecider;
-import spring.session.concurrent.service.DefaultPrincipalGetter;
+import spring.session.concurrent.ext.DefaultKickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.DefaultPrincipalExistDecider;
+import spring.session.concurrent.ext.DefaultPrincipalGetter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

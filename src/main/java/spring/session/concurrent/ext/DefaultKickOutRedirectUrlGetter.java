@@ -1,6 +1,4 @@
-package spring.session.concurrent.service;
-
-import spring.session.concurrent.service.KickOutRedirectUrlGetter;
+package spring.session.concurrent.ext;
 
 import javax.servlet.http.HttpServletRequest;
 

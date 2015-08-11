@@ -7,14 +7,14 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
-import spring.session.concurrent.service.KickOutRedirectUrlGetter;
-import spring.session.concurrent.service.MaxSessionCountGetter;
-import spring.session.concurrent.service.PrincipalExistDecider;
-import spring.session.concurrent.service.PrincipalGetter;
-import spring.session.concurrent.service.DefaultKickOutRedirectUrlGetter;
-import spring.session.concurrent.service.DefaultMaxSessionCountGetter;
-import spring.session.concurrent.service.DefaultPrincipalExistDecider;
-import spring.session.concurrent.service.DefaultPrincipalGetter;
+import spring.session.concurrent.ext.KickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.MaxSessionCountGetter;
+import spring.session.concurrent.ext.PrincipalExistDecider;
+import spring.session.concurrent.ext.PrincipalGetter;
+import spring.session.concurrent.ext.DefaultKickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.DefaultMaxSessionCountGetter;
+import spring.session.concurrent.ext.DefaultPrincipalExistDecider;
+import spring.session.concurrent.ext.DefaultPrincipalGetter;
 
 /**
  * Created by hanwen on 15-7-30.

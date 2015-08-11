@@ -2,9 +2,9 @@ package spring.session.concurrent;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
-import spring.session.concurrent.service.KickOutRedirectUrlGetter;
-import spring.session.concurrent.service.PrincipalExistDecider;
-import spring.session.concurrent.service.PrincipalGetter;
+import spring.session.concurrent.ext.KickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.PrincipalExistDecider;
+import spring.session.concurrent.ext.PrincipalGetter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

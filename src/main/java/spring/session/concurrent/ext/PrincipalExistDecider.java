@@ -1,4 +1,4 @@
-package spring.session.concurrent.service;
+package spring.session.concurrent.ext;
 
 import javax.servlet.http.HttpServletRequest;
 
