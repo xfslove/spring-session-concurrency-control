@@ -8,6 +8,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import spring.session.concurrent.service.DefaultMaxSessionCountGetter;
+import spring.session.concurrent.service.DefaultPrincipalExistDecider;
+import spring.session.concurrent.service.DefaultPrincipalGetter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -48,7 +51,7 @@ public class SessionInformationRegisterFilterTest {
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.filter = new SessionInformationRegisterFilter();
+		this.filter = new SessionInformationRegisterFilter(sessionInformationRepository, new DefaultPrincipalGetter(), new DefaultMaxSessionCountGetter(), new DefaultPrincipalExistDecider());
 		setupRequest(PRINCIPAL_VAL_1);
 	}
 

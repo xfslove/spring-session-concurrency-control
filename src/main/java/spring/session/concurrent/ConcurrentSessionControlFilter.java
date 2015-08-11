@@ -1,9 +1,10 @@
 package spring.session.concurrent;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
-import spring.session.concurrent.service.*;
+import spring.session.concurrent.service.KickOutRedirectUrlGetter;
+import spring.session.concurrent.service.PrincipalExistDecider;
+import spring.session.concurrent.service.PrincipalGetter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -18,20 +19,25 @@ import java.io.IOException;
 @Order(ConcurrentSessionControlFilter.DEFAULT_ORDER)
 public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 
-	/** after {@link SessionInformationRegisterFilter#DEFAULT_ORDER}*/
+	/**
+	 * after {@link SessionInformationRegisterFilter#DEFAULT_ORDER}
+	 */
 	public static final int DEFAULT_ORDER = SessionInformationRegisterFilter.DEFAULT_ORDER + 1;
 
-	@Autowired
 	private SessionInformationRepository sessionInformationRepository;
 
-	@Autowired
 	private PrincipalGetter principalGetter;
 
-	@Autowired
 	private KickOutRedirectUrlGetter kickOutRedirectUrlGetter;
 
-	@Autowired
 	private PrincipalExistDecider principalExistDecider;
+
+	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, PrincipalGetter principalGetter, KickOutRedirectUrlGetter kickOutRedirectUrlGetter, PrincipalExistDecider principalExistDecider) {
+		this.sessionInformationRepository = sessionInformationRepository;
+		this.principalGetter = principalGetter;
+		this.kickOutRedirectUrlGetter = kickOutRedirectUrlGetter;
+		this.principalExistDecider = principalExistDecider;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

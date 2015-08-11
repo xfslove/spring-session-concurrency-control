@@ -1,4 +1,4 @@
-package spring.session.concurrent.service.defaultImpl;
+package spring.session.concurrent.service;
 
 import spring.session.concurrent.service.KickOutRedirectUrlGetter;
 

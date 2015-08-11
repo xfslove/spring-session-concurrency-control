@@ -1,7 +1,6 @@
 package spring.session.concurrent;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.session.web.http.SessionRepositoryFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,17 +26,20 @@ public class SessionInformationRegisterFilter extends OncePerRequestFilter {
 	/** after {@link org.springframework.session.web.http.SessionRepositoryFilter#DEFAULT_ORDER} */
 	public static final int DEFAULT_ORDER = SessionRepositoryFilter.DEFAULT_ORDER + 1;
 
-	@Autowired
 	private SessionInformationRepository sessionInformationRepository;
 
-	@Autowired
 	private PrincipalGetter principalGetter;
 
-	@Autowired
 	private MaxSessionCountGetter maxSessionCountGetter;
 
-	@Autowired
 	private PrincipalExistDecider principalExistDecider;
+
+	public SessionInformationRegisterFilter(SessionInformationRepository sessionInformationRepository, PrincipalGetter principalGetter, MaxSessionCountGetter maxSessionCountGetter, PrincipalExistDecider principalExistDecider) {
+		this.sessionInformationRepository = sessionInformationRepository;
+		this.principalGetter = principalGetter;
+		this.maxSessionCountGetter = maxSessionCountGetter;
+		this.principalExistDecider = principalExistDecider;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
