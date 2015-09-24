@@ -3,6 +3,7 @@ package spring.session.concurrent;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
 import spring.session.concurrent.ext.KickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.LogoutDecider;
 import spring.session.concurrent.ext.PrincipalExistDecider;
 import spring.session.concurrent.ext.PrincipalGetter;
 
@@ -32,15 +33,25 @@ public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 
 	private PrincipalExistDecider principalExistDecider;
 
-	public ConcurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, PrincipalGetter principalGetter, KickOutRedirectUrlGetter kickOutRedirectUrlGetter, PrincipalExistDecider principalExistDecider) {
+  private LogoutDecider logoutDecider;
+
+	public ConcurrentSessionControlFilter(
+      SessionInformationRepository sessionInformationRepository,
+      PrincipalGetter principalGetter,
+      KickOutRedirectUrlGetter kickOutRedirectUrlGetter,
+      PrincipalExistDecider principalExistDecider,
+      LogoutDecider logoutDecider
+  ) {
 		this.sessionInformationRepository = sessionInformationRepository;
 		this.principalGetter = principalGetter;
 		this.kickOutRedirectUrlGetter = kickOutRedirectUrlGetter;
 		this.principalExistDecider = principalExistDecider;
+    this.logoutDecider = logoutDecider;
 	}
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		if (principalExistDecider.isExistPrincipal(request)) {
 			SessionInformation info =
@@ -50,12 +61,16 @@ public class ConcurrentSessionControlFilter extends OncePerRequestFilter {
 					);
 			if (info != null) {
 				if (info.isExpired()) {
-					// Expired - abort processing
-					String targetUrl = kickOutRedirectUrlGetter.getRedirectUrl(request);
-					if (targetUrl != null) {
-						//	redirect to targetUrl
+
+          // logout
+          logoutDecider.doLogout(request);
+
+          // Expired - abort processing
+          String targetUrl = kickOutRedirectUrlGetter.getRedirectUrl(request);
+          if (targetUrl != null) {
+            //	redirect to targetUrl
 						response.sendRedirect(targetUrl);
-						session.invalidate();
+            
 						return;
 					} else {
 						response.getWriter().print("This session has been expired (possibly due to multiple concurrent " +

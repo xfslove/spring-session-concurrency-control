@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import spring.session.concurrent.ext.DefaultKickOutRedirectUrlGetter;
+import spring.session.concurrent.ext.DefaultLogoutDecider;
 import spring.session.concurrent.ext.DefaultPrincipalExistDecider;
 import spring.session.concurrent.ext.DefaultPrincipalGetter;
 
@@ -52,7 +53,7 @@ public class ConcurrentSessionControlFilterTest {
 	@BeforeMethod(alwaysRun = true)
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
-		this.filter = new ConcurrentSessionControlFilter(sessionInformationRepository, new DefaultPrincipalGetter(), new DefaultKickOutRedirectUrlGetter(), new DefaultPrincipalExistDecider());
+		this.filter = new ConcurrentSessionControlFilter(sessionInformationRepository, new DefaultPrincipalGetter(), new DefaultKickOutRedirectUrlGetter(), new DefaultPrincipalExistDecider(), new DefaultLogoutDecider());
 		setupRequest(PRINCIPAL_VAL_1);
 	}
 

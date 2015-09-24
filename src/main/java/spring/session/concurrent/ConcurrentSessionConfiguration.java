@@ -7,14 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
-import spring.session.concurrent.ext.KickOutRedirectUrlGetter;
-import spring.session.concurrent.ext.MaxSessionCountGetter;
-import spring.session.concurrent.ext.PrincipalExistDecider;
-import spring.session.concurrent.ext.PrincipalGetter;
-import spring.session.concurrent.ext.DefaultKickOutRedirectUrlGetter;
-import spring.session.concurrent.ext.DefaultMaxSessionCountGetter;
-import spring.session.concurrent.ext.DefaultPrincipalExistDecider;
-import spring.session.concurrent.ext.DefaultPrincipalGetter;
+import spring.session.concurrent.ext.*;
 
 /**
  * Created by hanwen on 15-7-30.
@@ -47,6 +40,12 @@ public class ConcurrentSessionConfiguration {
 		return new DefaultKickOutRedirectUrlGetter();
 	}
 
+  @Bean
+  @ConditionalOnMissingBean(LogoutDecider.class)
+  public LogoutDecider logoutDecider() {
+    return new DefaultLogoutDecider();
+  }
+
 	@Bean
 	public RedisTemplate<String,SessionInformation> sessionInformationRedisTemplate(RedisConnectionFactory connectionFactory) {
 		RedisTemplate<String, SessionInformation> template = new RedisTemplate<String, SessionInformation>();
@@ -69,8 +68,8 @@ public class ConcurrentSessionConfiguration {
 	}
 
 	@Bean
-	public ConcurrentSessionControlFilter concurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, PrincipalGetter principalGetter, KickOutRedirectUrlGetter kickOutRedirectUrlGetter, PrincipalExistDecider principalExistDecider) {
-		ConcurrentSessionControlFilter concurrentSessionControlFilter = new ConcurrentSessionControlFilter(sessionInformationRepository, principalGetter, kickOutRedirectUrlGetter, principalExistDecider);
+	public ConcurrentSessionControlFilter concurrentSessionControlFilter(SessionInformationRepository sessionInformationRepository, PrincipalGetter principalGetter, KickOutRedirectUrlGetter kickOutRedirectUrlGetter, PrincipalExistDecider principalExistDecider, LogoutDecider logoutDecider) {
+		ConcurrentSessionControlFilter concurrentSessionControlFilter = new ConcurrentSessionControlFilter(sessionInformationRepository, principalGetter, kickOutRedirectUrlGetter, principalExistDecider, logoutDecider);
 		return concurrentSessionControlFilter;
 	}
 }
